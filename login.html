@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <style>
+        /* General styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle, #020024, #090979, #00d4ff);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* Form styling */
+        .form-container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: black;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Login form -->
+    <div class="form-container">
+        <h2>Login</h2>
+        <input type="text" id="full-name" placeholder="Full Name" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button id="login-btn">Login</button>
+        <div class="error-message" id="error-message"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPm3cUOI40twF1133TWOzahO62WabAgxw",
+            authDomain: "newr-9f28d.firebaseapp.com",
+            databaseURL: "https://newr-9f28d-default-rtdb.firebaseio.com",
+            projectId: "newr-9f28d",
+            storageBucket: "newr-9f28d.appspot.com",
+            messagingSenderId: "62326709686",
+            appId: "1:62326709686:web:fa41684afdb83b28e23517",
+            measurementId: "G-H3927QCZKJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Handle login button click
+        document.getElementById("login-btn").addEventListener("click", () => {
+            const fullName = document.getElementById("full-name").value;
+            const password = document.getElementById("password").value;
+
+            if (fullName && password) {
+                validateCredentials(fullName, password);
+            } else {
+                displayErrorMessage("Please fill out all fields.");
+            }
+        });
+
+        // Validate credentials against Firebase data
+        function validateCredentials(fullName, password) {
+            const dbRef = ref(database);
+
+            get(child(dbRef, 'users')).then((snapshot) => {
+                if (snapshot.exists()) {
+                    let userFound = false;
+
+                    snapshot.forEach((userSnapshot) => {
+                        const userData = userSnapshot.val();
+                        if (userData.fullName === fullName && userData.password === password) {
+                            userFound = true;
+                            window.location.href = "home.html"; // Redirect to home page if credentials match
+                        }
+                    });
+
+                    if (!userFound) {
+                        displayErrorMessage("Invalid full name or password.");
+                    }
+                } else {
+                    displayErrorMessage("No user data found.");
+                }
+            }).catch((error) => {
+                console.error(error);
+                displayErrorMessage("Error retrieving user data.");
+            });
+        }
+
+        // Display error message
+        function displayErrorMessage(message) {
+            const errorMessageElement = document.getElementById("error-message");
+            errorMessageElement.textContent = message;
+        }
+    </script>
+
+</body>
+</html>

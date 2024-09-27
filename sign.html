@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jupiter Sign In</title>
+    <style>
+        /* General styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle, #020024, #090979, #00d4ff);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Jupiter planet styling */
+        #jupiter {
+            width: 150px;
+            height: 150px;
+            background-image: url('https://www.solarsystemscope.com/textures/download/2k_jupiter.jpg');
+            background-size: cover;
+            border-radius: 50%;
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.5);
+            animation: rotatePlanet 10s linear infinite;
+        }
+
+        @keyframes rotatePlanet {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Form styling */
+        .form-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-container input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: black;
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            background-color: #ffcc00;
+            transition: width 0.5s ease;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            color: #ffcc00;
+            text-align: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: block;
+        }
+
+        .modal button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Jupiter planet icon -->
+    <div id="jupiter"></div>
+
+    <!-- Sign-in form -->
+    <div class="form-container">
+        <h2>Sign In</h2>
+        <input type="text" id="full-name" placeholder="Full Name" required>
+        <input type="text" id="phone-number" placeholder="Phone Number" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="country" placeholder="Country" required>
+        <button id="save-btn">Save</button>
+
+        <!-- Progress bar -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="modal1">Your ID is: <span id="user-id"></span><br><button id="continue-btn">Continue</button></div>
+    <div class="modal" id="modal2">DON'T SHARE YOUR ID<br><button id="next-btn">Next</button></div>
+    <div class="modal" id="modal3">Welcome to Planet Jupiter!<br><button id="close-btn">Close</button></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPm3cUOI40twF1133TWOzahO62WabAgxw",
+            authDomain: "newr-9f28d.firebaseapp.com",
+            databaseURL: "https://newr-9f28d-default-rtdb.firebaseio.com",
+            projectId: "newr-9f28d",
+            storageBucket: "newr-9f28d.appspot.com",
+            messagingSenderId: "62326709686",
+            appId: "1:62326709686:web:fa41684afdb83b28e23517",
+            measurementId: "G-H3927QCZKJ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Generate a random 6-digit ID
+        function generateUserId() {
+            return Math.floor(100000 + Math.random() * 900000).toString();
+        }
+
+        // Handle save button click
+        document.getElementById("save-btn").addEventListener("click", () => {
+            const fullName = document.getElementById("full-name").value;
+            const phoneNumber = document.getElementById("phone-number").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const country = document.getElementById("country").value;
+
+            if (fullName && phoneNumber && email && password && country) {
+                const userId = generateUserId();
+
+                // Save data in Firebase
+                const userRef = ref(database, 'users/' + userId);
+                set(userRef, {
+                    fullName,
+                    phoneNumber,
+                    email,
+                    password,
+                    country
+                });
+
+                // Save data in LocalStorage
+                localStorage.setItem('userId', userId);
+                localStorage.setItem('fullName', fullName);
+                localStorage.setItem('phoneNumber', phoneNumber);
+                localStorage.setItem('email', email);
+                localStorage.setItem('country', country);
+
+                // Show progress bar and modals
+                showProgressBarAndModals(userId);
+            } else {
+                showAlert("Please fill out all fields.");
+            }
+        });
+
+        // Show alert as modal
+        function showAlert(message) {
+            const modal = document.createElement("div");
+            modal.className = "modal show";
+            modal.innerHTML = `${message}<br><button onclick="this.parentElement.classList.remove('show');">Close</button>`;
+            document.body.appendChild(modal);
+        }
+
+        // Show progress bar and modals
+        function showProgressBarAndModals(userId) {
+            let progressBar = document.getElementById("progress-bar");
+            let progress = 0;
+            let interval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = progress + "%";
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    showModals(userId);
+                }
+            }, 100);
+        }
+
+        // Show modals one after another
+        function showModals(userId) {
+            const modal1 = document.getElementById("modal1");
+            const modal2 = document.getElementById("modal2");
+            const modal3 = document.getElementById("modal3");
+
+            document.getElementById("user-id").textContent = userId;
+            modal1.classList.add("show");
+            document.getElementById("continue-btn").onclick = function() {
+                modal1.classList.remove("show");
+                modal2.classList.add("show");
+            };
+            document.getElementById("next-btn").onclick = function() {
+                modal2.classList.remove("show");
+                modal3.classList.add("show");
+            };
+            document.getElementById("close-btn").onclick = function() {
+                modal3.classList.remove("show");
+                window.location.href = "main.html";
+            };
+        }
+    </script>
+</body>
+</html>
